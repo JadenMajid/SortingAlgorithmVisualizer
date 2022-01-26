@@ -1,19 +1,25 @@
-from cmath import inf
 from heapq import merge
 import pygame
 import copy
 from pygame import gfxdraw
 import random
 import math
+import numpy as np
 import time
 import sys
-
+import pyaudio
 """
------USEFUL METHODS-----
+-----TO DO-----
+1) ADD MORE SORTING FUNCTIONS!!!!!
+2) Add audio 
+3) 
+
+
+
+-----USEFUL FUNCTIONS-----
 0) Datatype: Name of method: purpose
 1) List: random.shuffle(list): randomize contents of list
 2) 
-
 
 
 
@@ -34,7 +40,7 @@ HEIGHT = 600
 WIDTH = 800
 
 # Amount of Rectangles
-N = 800
+N = WIDTH // 2
 
 
 def issorted(lst, key=lambda x: x):
@@ -86,14 +92,8 @@ def shellSort(screen, lov):
 
 
 def insertionSort(screen, lov):
-    # Traverse through 1 to len(arr)
     for i in range(1, len(lov)):
-
         key = lov[i]
-
-        # Move elements of arr[0..i-1], that are
-        # greater than key, to one position ahead
-        # of their current position
         j = i-1
         while j >= 0 and key < lov[j]:
             lov[j + 1] = lov[j]
@@ -116,10 +116,10 @@ def render(screen, lov, h):
     for v in lov:
         if v == h:
             pygame.draw.rect(screen, RED, pygame.Rect(
-                i * WIDTH/N, HEIGHT - v - HEIGHT/N, WIDTH/N+1, v + HEIGHT/N))
+                i * WIDTH/N, HEIGHT - v - HEIGHT/N+3, WIDTH/N+1, v + HEIGHT/N))
         else:
             pygame.draw.rect(screen, WHITE, pygame.Rect(
-                i * WIDTH/N, HEIGHT - v - HEIGHT/N, WIDTH/N+1, v + HEIGHT/N))
+                i * WIDTH/N, HEIGHT - v - HEIGHT/N+3, WIDTH/N+1, v + HEIGHT/N))
         i += 1
     pygame.display.flip()
     pygame.display.update()
@@ -157,12 +157,19 @@ def eventHandler(screen, events, lov):
                 sys.exit()
 
 
-def setup():
+def main(arr):
+
     pygame.init()
     clock = pygame.time.Clock()
+    """
+    # Audio Stuff
+    p = pyaudio.PyAudio()
 
-
-def main(arr):
+    VOLUME = 0.5     # range [0.0, 1.0]
+    FS = 44100       # sampling rate, Hz, must be integer
+    DURATION = 1.0   # in seconds, may be float
+    F = 440.0        # sine frequency, Hz, may be float
+    """
 
     # Initalizes List Object (lov = listofvalues)
     lov = arr
@@ -200,5 +207,4 @@ def main(arr):
 
 # If the module is imported for whatever reason, the main loop won't run
 if __name__ == "__main__":
-
     main([])
