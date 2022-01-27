@@ -1,4 +1,5 @@
 from heapq import merge
+from tkinter import W
 import pygame
 import copy
 from pygame import gfxdraw
@@ -8,6 +9,7 @@ import numpy as np
 import time
 import sys
 import pyaudio
+
 """
 -----TO DO-----
 1) ADD MORE SORTING FUNCTIONS!!!!!
@@ -40,7 +42,7 @@ HEIGHT = 600
 WIDTH = 800
 
 # Amount of Rectangles
-N = WIDTH // 2
+numofvals = WIDTH//2
 
 
 def issorted(lst, key=lambda x: x):
@@ -53,12 +55,14 @@ def issorted(lst, key=lambda x: x):
 def nextlov(screen, lov, name):
     if name == "bubble":
         bubblesort(screen, lov)
-    elif name == "bogo":
-        bogosort(screen, lov)
     elif name == "insertion":
         insertionSort(screen, lov)
     elif name == "shell":
         shellSort(screen, lov)
+    elif name == "radix":
+        radixSort(screen, lov)
+    elif name == "bogo":
+        bogosort(screen, lov)
     return lov
 
 
@@ -69,8 +73,34 @@ def bubblesort(screen, lov):
                 temp = lov[j]
                 lov[j] = lov[j+1]
                 lov[j+1] = temp
-            eventHandler(screen, pygame.event.get(), lov)
-            render(screen, lov, lov[j+1])
+
+            render(screen, lov, [lov[numofvals-i-1], lov[j+1]])
+
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        return None
+            eventHandler(screen, events, lov)
+
+
+def insertionSort(screen, lov):
+    for i in range(1, len(lov)):
+        key = lov[i]
+        j = i-1
+        while j >= 0 and key < lov[j]:
+            lov[j + 1] = lov[j]
+            j -= 1
+
+            render(screen, lov, [lov[i], lov[j]])
+
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        return None
+            eventHandler(screen, events, lov)
+        lov[j + 1] = key
 
 
 def shellSort(screen, lov):
@@ -84,42 +114,111 @@ def shellSort(screen, lov):
             while j >= interval and lov[j - interval] > temp:
                 lov[j] = lov[j - interval]
                 j -= interval
-                eventHandler(screen, pygame.event.get(), lov)
-                render(screen, lov, lov[j])
+
+                render(screen, lov, [lov[j], lov[i]])
+
+                events = pygame.event.get()
+                for event in events:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            return None
+                eventHandler(screen, events, lov)
 
             lov[j] = temp
         interval //= 2
 
 
-def insertionSort(screen, lov):
-    for i in range(1, len(lov)):
-        key = lov[i]
-        j = i-1
-        while j >= 0 and key < lov[j]:
-            lov[j + 1] = lov[j]
-            j -= 1
-            eventHandler(screen, pygame.event.get(), lov)
-            render(screen, lov, lov[j])
-        lov[j + 1] = key
+def countingSort(screen, array, place):
+    size = len(array)
+    output = [0] * size
+    count = [0] * 10
+
+    # Calculate count of elements
+    for i in range(0, size):
+        index = array[i] // place
+        count[int(index % 10)] += 1
+
+    # Calculate cumulative count
+    for i in range(1, 10):
+        count[i] += count[i - 1]
+
+    # Place the elements in sorted order
+    i = size - 1
+    while i >= 0:
+        index = array[i] // place
+        output[count[int(index % 10)] - 1] = array[i]
+        count[int(index % 10)] -= 1
+        i -= 1
+        render(screen, output, [array[i]])
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    main[array]
+        eventHandler(screen, events, array)
+
+    for i in range(0, size):
+        array[i] = output[i]
+        render(screen, array, [array[i]])
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    main[array]
+        eventHandler(screen, events, array)
+
+
+# Main function to implement radix sort
+def radixSort(screen, array):
+    # Get maximum element
+    max_element = max(array)
+
+    # Apply counting sort to sort elements based on place value.
+    place = 1
+    while max_element // place > 0:
+        countingSort(screen, array, place)
+        place *= 10
+        render(screen, array, [-1])
+
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return None
+        eventHandler(screen, events, array)
 
 
 def bogosort(screen, lov):
+    n = 0
     while not issorted(lov):
+        n += 1
+        print(n)
         random.shuffle(lov)
-        eventHandler(screen, pygame.event.get(), lov)
-        render(screen, lov, -1)
+
+        render(screen, lov, [random.randint(0, numofvals-1)*HEIGHT/numofvals])
+        time.sleep(0.1)
+
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return None
+        eventHandler(screen, events, lov)
+
+    print("DONE WITH ONLY", n, "ITERATIONS")
+    print("-------------------------------")
 
 
 def render(screen, lov, h):
     i = 0
     screen.fill(BLACK)
     for v in lov:
-        if v == h:
+        if v in h:
             pygame.draw.rect(screen, RED, pygame.Rect(
-                i * WIDTH/N, HEIGHT - v - HEIGHT/N+3, WIDTH/N+1, v + HEIGHT/N))
+                i * WIDTH/numofvals, HEIGHT - v - HEIGHT/numofvals+3, WIDTH/numofvals+1, v + HEIGHT/numofvals))
         else:
             pygame.draw.rect(screen, WHITE, pygame.Rect(
-                i * WIDTH/N, HEIGHT - v - HEIGHT/N+3, WIDTH/N+1, v + HEIGHT/N))
+                i * WIDTH/numofvals, HEIGHT - v - HEIGHT/numofvals+3, WIDTH/numofvals+1, v + HEIGHT/numofvals))
         i += 1
     pygame.display.flip()
     pygame.display.update()
@@ -145,16 +244,46 @@ def eventHandler(screen, events, lov):
                 nextlov(screen, lov, "insertion")
             if event.key == pygame.K_3:
                 nextlov(screen, lov, "shell")
+            if event.key == pygame.K_4:
+                nextlov(screen, lov, "radix")
+            if event.key == pygame.K_5:
+                pass
+            if event.key == pygame.K_6:
+                pass
+            if event.key == pygame.K_7:
+                pass
+            if event.key == pygame.K_8:
+                pass
+            if event.key == pygame.K_9:
+                pass
             if event.key == pygame.K_0:
                 nextlov(screen, lov, "bogo")
             if event.key == pygame.K_r:
                 random.shuffle(lov)
                 main(lov)
             if event.key == pygame.K_SPACE:
-                render(screen, lov, -1)
+                render(screen, lov, [-1])
+                main(lov)
+
+            global numofvals
+            if event.key == pygame.K_EQUALS:
+                numofvals += 1
+                lov = populate(numofvals)
+                main(lov)
+            if event.key == pygame.K_MINUS:
+                numofvals -= 1
+                lov = populate(numofvals)
                 main(lov)
             if event.key == pygame.K_ESCAPE:
                 sys.exit()
+
+
+def populate(n):
+    lov = []
+    for i in range(n):
+        lov.append(i*HEIGHT/n)
+    random.shuffle(lov)
+    return lov
 
 
 def main(arr):
@@ -175,9 +304,7 @@ def main(arr):
     lov = arr
 
     if arr == []:
-        for i in range(N):
-            lov.append(i*HEIGHT/N)
-        random.shuffle(lov)
+        lov = populate(numofvals)
 
     pygame.display.set_caption("Sorting Algorithm Visualizer")
 
@@ -198,7 +325,7 @@ def main(arr):
             pass
 
         # Render function, needs screen to pass stuff to and whatever data we deem necessary
-        render(screen, lov, -1)
+        render(screen, lov, [-1])
 
         # This just
         pygame.display.flip()
